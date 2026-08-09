@@ -82,7 +82,7 @@ textarea {
   width: 100%;
   max-width: var(--container);
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 22px;
 }
 
 /* ==========================================================================
@@ -118,11 +118,21 @@ h3 {
 }
 
 .section {
-  padding: 72px 0;
+  padding: 56px 0;
 }
 
 .section-tight {
-  padding: 56px 0;
+  padding: 40px 0;
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 72px 0;
+  }
+
+  .section-tight {
+    padding: 56px 0;
+  }
 }
 
 .section-head {
@@ -296,7 +306,7 @@ h3 {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 200;
   transition: box-shadow 0.25s ease;
 }
 
@@ -415,6 +425,7 @@ h3 {
   flex-direction: column;
   overflow-y: auto;
   border-left: 1px solid var(--border);
+  box-shadow: none;
 }
 
 .site-nav.open {
@@ -474,11 +485,13 @@ h3 {
 .nav-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(8, 62, 107, 0.42);
-  z-index: 290;
+  background: rgba(8, 62, 107, 0.45);
+  z-index: 195;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  /* Do NOT cover the sticky header */
+  top: 0;
 }
 
 .nav-backdrop.show {
@@ -594,8 +607,8 @@ body.nav-locked {
   position: relative;
   z-index: 2;
   display: grid;
-  gap: 40px;
-  padding: 60px 0 72px;
+  gap: 36px;
+  padding: 48px 0 60px;
 }
 
 .hero-badge {
@@ -1938,14 +1951,21 @@ body.nav-locked {
 .site-footer {
   background: var(--primary-deep);
   color: rgba(255, 255, 255, 0.82);
-  padding: 56px 0 0;
+  padding: 40px 0 0;
   margin-top: 40px;
+}
+
+@media (min-width: 768px) {
+  .site-footer {
+    padding: 56px 0 0;
+  }
 }
 
 .footer-grid {
   display: grid;
-  gap: 36px;
-  padding-bottom: 40px;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+  padding-bottom: 32px;
 }
 
 .footer-brand .brand-text strong {
@@ -2036,6 +2056,18 @@ body.nav-locked {
   .footer-grid {
     grid-template-columns: 1.4fr 1fr 1fr 1.2fr;
     gap: 40px;
+    padding-bottom: 40px;
+  }
+}
+
+/* On mobile, brand takes full width */
+@media (max-width: 767px) {
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .footer-brand p {
+    max-width: 100%;
   }
 }
 
@@ -2047,7 +2079,13 @@ body.nav-locked {
   background: linear-gradient(160deg, var(--primary-deep), var(--primary) 70%);
   color: var(--white);
   text-align: center;
-  padding: 56px 0;
+  padding: 40px 0;
+}
+
+@media (min-width: 768px) {
+  .page-hero {
+    padding: 56px 0;
+  }
 }
 
 .page-hero h1 {
