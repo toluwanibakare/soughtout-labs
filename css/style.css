@@ -310,6 +310,13 @@ h3 {
   transition: box-shadow 0.25s ease;
 }
 
+/* Make entire header sticky so white nav always shows on scroll */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
 .header-main.scrolled {
   box-shadow: var(--shadow-sm);
 }
@@ -684,10 +691,11 @@ body.nav-locked {
   border-radius: 26px;
   box-shadow: var(--shadow-lg);
   width: 100%;
-  max-width: 420px;
+  max-width: 480px;
   margin: 0 auto;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
+  object-position: center;
 }
 
 .hero-float {
