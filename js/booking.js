@@ -11,15 +11,62 @@
   var LAB_BOOKING_FEE = 5000;
   var INTERPRETATION_FEE = 3000;
 
-  var SERVICE_CATEGORIES = [
-    "Haematology",
-    "Microbiology",
-    "Serology",
-    "Chemical Pathology",
-    "Histology & Cytology",
-    "Molecular & Special Tests",
-    "Radiology Services"
-  ];
+  var LAB_BOOKING_FEE = 0; // Base fee is 0, since it is calculated from tests.
+  var INTERPRETATION_FEE = 3000;
+
+  var TESTS_BY_CATEGORY = {
+    "Haematology": [
+      { name: "Blood group", price: 8000 },
+      { name: "Genotype", price: 8000 },
+      { name: "Full blood count", price: 15000 },
+      { name: "Full blood count plus ESR", price: 20000 },
+      { name: "ESR", price: 5000 },
+      { name: "HB", price: 5000 },
+      { name: "PCV", price: 5000 },
+      { name: "BLOOD FILM", price: 30000 }
+    ],
+    "Microbiology": [
+      { name: "Malaria Parasite", price: 3000 },
+      { name: "Widal Test", price: 7000 },
+      { name: "Urine M/C/S", price: 18000, note: "Takes 48-72hrs to grow organisms" },
+      { name: "Blood Culture", price: 35000, note: "Takes 48-72hrs to grow organisms" },
+      { name: "HVS M/C/S", price: 12000, note: "Takes 48-72hrs to grow organisms" },
+      { name: "Stool M/C/S", price: 22000, note: "Takes 48-72hrs to grow organisms" },
+      { name: "HIV Test", price: 5000 },
+      { name: "Hep B Surface Antigen", price: 8000 },
+      { name: "Hep C Antibody", price: 7000 },
+      { name: "SPUTUM MCS", price: 15000, note: "Takes 48-72hrs to grow organisms" }
+    ],
+    "Chemical Pathology": [
+      { name: "Eucr", price: 25000 },
+      { name: "LIVER FUNCTION (LFT)", price: 25000 },
+      { name: "Lipid profile", price: 30000 },
+      { name: "Female Hormone profile", price: 60000 },
+      { name: "Male Hormone profile", price: 50000 },
+      { name: "HbA1C", price: 30000 },
+      { name: "Serum Prolactin", price: 20000 }
+    ],
+    "Serology": [
+      { name: "HIV Screening", price: 5000 },
+      { name: "Hepatitis B & C Screening", price: 15000 },
+      { name: "Syphilis (VDRL) Test", price: 5000 },
+      { name: "Widal Panel", price: 7000 }
+    ],
+    "Histology & Cytology": [
+      { name: "Tissue Biopsy Pathology", price: 45000 },
+      { name: "Pap Smear Cytology", price: 20000 }
+    ],
+    "Molecular & Special Tests": [
+      { name: "DNA PCR Test", price: 80000 },
+      { name: "HbA1c Glycated Hemoglobin", price: 30000 }
+    ],
+    "Radiology Services": [
+      { name: "Ultrasound Scan (Abdominal)", price: 15000 },
+      { name: "Radiology Referral & Review", price: 10000 }
+    ]
+  };
+
+  var SERVICE_CATEGORIES = Object.keys(TESTS_BY_CATEGORY);
 
   var CONSULT_METHODS = [
     { value: "Voice Call", label: "Voice Call" },
@@ -39,7 +86,8 @@
     type: null,
     data: null,
     reference: null,
-    amount: 0
+    amount: 0,
+    selectedTests: []
   };
 
   var $ = function (id) { return document.getElementById(id); };
@@ -89,6 +137,7 @@
     state.type = null;
     state.data = null;
     state.reference = null;
+    state.selectedTests = [];
     showStep("choice");
   }
 
@@ -151,6 +200,8 @@
     form.querySelectorAll("[name]").forEach(function (input) {
       if (input.type === "radio") {
         if (input.checked) data[input.name] = input.value;
+      } else if (input.type === "checkbox") {
+        // Handled separately
       } else if (input.type === "file") {
         if (input.files && input.files.length) {
           data[input.name] = { name: input.files[0].name, size: input.files[0].size };
@@ -177,19 +228,82 @@
     });
     bindValidation(form);
 
+    catSelect.addEventListener("change", function () {
+      var cat = catSelect.value;
+      var tests = TESTS_BY_CATEGORY[cat] || [];
+      var area = $("testsSelectionArea");
+      var list = $("testsCheckboxList");
+      
+      list.innerHTML = "";
+      state.selectedTests = [];
+      updateTestsTotal();
+
+      if (tests.length > 0) {
+        area.hidden = false;
+        tests.forEach(function (t, index) {
+          var item = el("div", { class: "test-item" });
+          var noteHtml = t.note ? '<br><small style="color:var(--text-soft); font-weight:normal;">' + escapeHtml(t.note) + '</small>' : '';
+          
+          item.innerHTML = '<div class="test-item-meta">' +
+            '<input type="checkbox" id="test-' + index + '" value="' + escapeHtml(t.name) + '" data-price="' + t.price + '">' +
+            '<label for="test-' + index + '">' + escapeHtml(t.name) + noteHtml + '</label>' +
+            '</div>' +
+            '<span class="price-badge">₦' + t.price.toLocaleString("en-NG") + '</span>';
+
+          var chk = item.querySelector('input');
+          chk.addEventListener("change", function () {
+            item.classList.toggle("selected", chk.checked);
+            if (chk.checked) {
+              state.selectedTests.push({ name: t.name, price: t.price });
+            } else {
+              state.selectedTests = state.selectedTests.filter(function (x) { return x.name !== t.name; });
+            }
+            updateTestsTotal();
+          });
+
+          // Allow clicking entire box to select
+          item.addEventListener("click", function (e) {
+            if (e.target !== chk && e.target.tagName !== "LABEL") {
+              chk.checked = !chk.checked;
+              chk.dispatchEvent(new Event("change"));
+            }
+          });
+
+          list.appendChild(item);
+        });
+      } else {
+        area.hidden = true;
+      }
+    });
+
+    function updateTestsTotal() {
+      var total = state.selectedTests.reduce(function (acc, x) { return acc + x.price; }, 0);
+      $("testsTotalDisplay").textContent = "₦" + total.toLocaleString("en-NG");
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
       var ok = true;
       form.querySelectorAll(".form-field").forEach(function (f) {
-        if (!validateField(f)) ok = false;
+        if (!f.hidden && !validateField(f)) ok = false;
       });
+
+      // Require at least one test unless "Others" text box is filled
+      var othersVal = $("lab-others").value.trim();
+      if (state.selectedTests.length === 0 && !othersVal) {
+        alert("Please select at least one test or specify what you would like to test for in the others field.");
+        ok = false;
+      }
+
       if (!ok) {
         var firstInvalid = form.querySelector(".form-field.invalid");
         if (firstInvalid) firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
         return;
       }
+
       state.data = collect(form);
-      state.amount = LAB_BOOKING_FEE;
+      state.data.selectedTests = state.selectedTests;
+      state.amount = state.selectedTests.reduce(function (acc, x) { return acc + x.price; }, 0);
       renderPayment();
       showStep("payment");
     });
@@ -283,7 +397,7 @@
   }
 
   /* ================================================================
-     Payment
+     Payment / WhatsApp Direct Submission
      ================================================================ */
 
   function renderPayment() {
@@ -291,7 +405,7 @@
     if (!summary) return;
 
     var rows = [
-      ["Service", state.type === "lab" ? "Laboratory / Radiology Booking" : "Result Interpretation"],
+      ["Service", state.type === "lab" ? "Laboratory Booking" : "Result Interpretation"],
       ["Full Name", state.data.fullName],
       ["Phone", state.data.phone],
       ["Email", state.data.email]
@@ -299,6 +413,13 @@
     if (state.type === "lab") {
       rows.push(["Location", state.data.location]);
       rows.push(["Category", state.data.category]);
+      
+      var testNames = state.selectedTests.map(function(t) { return t.name; }).join(", ");
+      if (state.data.othersInput) {
+        testNames += (testNames ? ", " : "") + state.data.othersInput + " (Custom/Other)";
+      }
+      rows.push(["Selected Tests", testNames || "Custom Request Only"]);
+      
       rows.push(["Visit Date", state.data.visitDate]);
       rows.push(["Time", state.data.timeSlot]);
     } else {
@@ -315,50 +436,27 @@
     summary.innerHTML = "";
     summary.appendChild(dl);
 
-    $("amountDisplay").textContent = "NGN " + state.amount.toLocaleString("en-NG");
-
-    var methods = document.querySelectorAll(".pay-method");
-    methods.forEach(function (m) {
-      if (m.getAttribute("data-bound") === "1") return;
-      m.setAttribute("data-bound", "1");
-      m.addEventListener("click", function () {
-        methods.forEach(function (x) { x.classList.remove("active"); });
-        m.classList.add("active");
-      });
-    });
+    $("amountDisplay").textContent = state.amount > 0 ? "₦" + state.amount.toLocaleString("en-NG") : "Price on Request / Consultation";
   }
 
   function startPayment() {
     var btn = $("payButton");
     if (!btn) return;
     btn.disabled = true;
-    btn.innerHTML = '<span class="pay-spinner"></span> Processing payment...';
+    btn.innerHTML = '<span class="pay-spinner"></span> Creating WhatsApp link...';
 
     state.reference = "SM-" + new Date().getFullYear() + "-" +
       String(Date.now()).slice(-6);
 
-    var done = function () {
-      saveBooking();
-      renderConfirmation();
-      showStep("done");
-    };
+    saveBooking();
+    
+    // Redirect to WhatsApp immediately
+    var waUrl = window.SOUGHTOUT.whatsappLink(bookingSummaryText());
+    window.open(waUrl, "_blank", "noopener");
 
-    if (PAYSTACK_PUBLIC_KEY && window.PaystackPop) {
-      PaystackPop.setup({
-        key: PAYSTACK_PUBLIC_KEY,
-        email: state.data.email,
-        amount: state.amount * 100,
-        currency: "NGN",
-        ref: state.reference,
-        onSuccess: done,
-        onCancel: function () {
-          btn.disabled = false;
-          btn.innerHTML = "Pay " + "NGN " + state.amount.toLocaleString("en-NG");
-        }
-      }).openIframe();
-    } else {
-      setTimeout(done, 1800);
-    }
+    // Display confirmation screen
+    renderConfirmation();
+    showStep("done");
   }
 
   function saveBooking() {
@@ -368,7 +466,7 @@
       data: state.data,
       amount: state.amount,
       at: new Date().toISOString(),
-      status: "pending_confirmation"
+      status: "whatsapp_submitted"
     };
     try {
       var bookings = JSON.parse(localStorage.getItem("soughtout_bookings") || "[]");
@@ -380,9 +478,9 @@
   function bookingSummaryText() {
     var d = state.data;
     var lines = [
-      "Hello Soughtout Medials, I just completed a booking.",
+      "Hello Soughtout Medicals, I want to submit a booking request.",
       "",
-      "Booking Reference: " + state.reference,
+      "Reference: " + state.reference,
       "Service: " + (state.type === "lab" ? "Laboratory / Radiology Booking" : "Result Interpretation"),
       "Full Name: " + d.fullName,
       "Phone: " + d.phone,
@@ -391,16 +489,21 @@
     if (state.type === "lab") {
       lines.push("Location: " + d.location);
       lines.push("Category: " + d.category);
+      
+      var tests = state.selectedTests.map(function(t) { return t.name + " (₦" + t.price.toLocaleString("en-NG") + ")"; }).join(", ");
+      if (tests) lines.push("Selected Tests: " + tests);
+      if (d.othersInput) lines.push("Other Tests Requested: " + d.othersInput);
+      
       lines.push("Preferred Date: " + d.visitDate);
       lines.push("Preferred Time: " + d.timeSlot);
-      if (d.doctorsRequest) lines.push("Doctor's Request: " + d.doctorsRequest);
       if (d.notes) lines.push("Notes: " + d.notes);
+      lines.push("Estimated Price: " + (state.amount > 0 ? "₦" + state.amount.toLocaleString("en-NG") : "Price on Request"));
     } else {
       lines.push("Consultation Method: " + d.consultMethod);
-      if (d.resultFile) lines.push("Result File: " + d.resultFile.name);
+      if (d.resultFile) lines.push("Result File Attached: " + d.resultFile.name);
       if (d.notes) lines.push("Notes: " + d.notes);
+      lines.push("Interpretation Fee: ₦" + state.amount.toLocaleString("en-NG"));
     }
-    lines.push("Amount Paid: NGN " + state.amount.toLocaleString("en-NG"));
     return lines.join("\n");
   }
 
@@ -413,14 +516,14 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
     );
 
-    var h2 = el("h2", null, "Your booking has been received.");
+    var h2 = el("h2", null, "Redirecting to WhatsApp...");
     var p = el("p", { class: "lead" },
-      "Your booking has been received. Our medical team will contact you shortly to confirm your appointment.");
+      "Your booking details have been prepared. A WhatsApp chat window has been opened to send this directly to our team.");
 
     var ref = el("span", { class: "confirm-ref" }, "Reference: " + state.reference);
 
     var p2 = el("p", { class: "pay-note" },
-      "You can speed up confirmation by sending your booking details to us on WhatsApp.");
+      "If the WhatsApp window did not open, you can click the button below to submit manually.");
 
     var row = el("div", { class: "btn-row" });
     var waBtn = el("a", {
@@ -428,8 +531,8 @@
       href: window.SOUGHTOUT.whatsappLink(bookingSummaryText()),
       target: "_blank",
       rel: "noopener"
-    }, window.SOUGHTOUT.waIcon() + "Send Booking on WhatsApp");
-    var againBtn = el("a", { class: "btn btn-outline", href: "book.html" }, "Book Another Appointment");
+    }, window.SOUGHTOUT.waIcon() + "Submit on WhatsApp");
+    var againBtn = el("a", { class: "btn btn-outline", href: "book.html" }, "Start New Booking");
 
     row.appendChild(waBtn);
     row.appendChild(againBtn);
@@ -477,3 +580,4 @@
     init();
   }
 })();
+

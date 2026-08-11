@@ -145,25 +145,35 @@
                   <label for="lab-location">Location (where should we visit you?) <span>*</span></label>
                   <input type="text" id="lab-location" name="location" placeholder="e.g. Port Harcourt, Rivers State" required>
                 </div>
-                <div class="form-field">
+                <div class="form-field span-2">
                   <label for="lab-category">Service Category <span>*</span></label>
                   <select id="lab-category" name="category" required>
                     <option value="" disabled selected>Select category</option>
                   </select>
                 </div>
+                <div class="form-field span-2" id="testsSelectionArea" hidden>
+                  <label>Select Tests to Include <span>*</span></label>
+                  <div class="tests-list" id="testsCheckboxList"></div>
+                  
+                  <div class="form-field mt-12">
+                    <label for="lab-others">Specify other tests (Optional)</label>
+                    <input type="text" id="lab-others" name="othersInput" placeholder="Specify any other tests not listed above...">
+                  </div>
+
+                  <div class="total-summary-box">
+                    <span>Selected Tests Total:</span>
+                    <strong id="testsTotalDisplay">₦0</strong>
+                  </div>
+                </div>
                 <div class="form-field">
                   <label for="lab-date">Preferred Visit Date <span>*</span></label>
                   <input type="date" id="lab-date" name="visitDate" required>
                 </div>
-                <div class="form-field span-2">
+                <div class="form-field">
                   <label for="lab-time">Preferred Time <span>*</span></label>
                   <select id="lab-time" name="timeSlot" required>
                     <option value="" disabled selected>Select time</option>
                   </select>
-                </div>
-                <div class="form-field span-2">
-                  <label for="lab-doctor">Doctor's Request (Optional)</label>
-                  <input type="text" id="lab-doctor" name="doctorsRequest" placeholder="e.g. FBC, Malaria Parasite, Blood Group">
                 </div>
                 <div class="form-field span-2">
                   <label for="lab-notes">Additional Notes (Optional)</label>
@@ -224,31 +234,24 @@
             </form>
           </div>
 
-          <!-- STEP 3: PAYMENT -->
+          <!-- STEP 3: REVIEW & BOOK -->
           <div class="wizard-step" id="stepPayment" hidden>
             <div class="section-head">
               <span class="eyebrow">Step 3 of 4</span>
-              <h2>Review &amp; Secure Payment</h2>
-              <p>Please confirm your details below before making payment.</p>
+              <h2>Review Your Booking</h2>
+              <p>Please confirm your details below. You will be redirected to WhatsApp to submit this request and coordinate payment directly with our team.</p>
             </div>
             <div class="form-card">
               <div class="summary-box" id="paymentSummary"></div>
               <div class="amount-row">
-                <span>Total Amount</span>
+                <span>Estimated Price</span>
                 <span id="amountDisplay"></span>
               </div>
-              <div class="pay-methods" role="radiogroup" aria-label="Payment method">
-                <div class="pay-method active" role="radio" aria-checked="true" tabindex="0">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  <span>Pay With Card<small>Visa, Mastercard, Verve &amp; more</small></span>
-                </div>
-                <div class="pay-method" role="radio" aria-checked="false" tabindex="0">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                  <span>Bank Transfer<small>Transfer securely to our account</small></span>
-                </div>
-              </div>
-              <button type="button" class="btn btn-primary btn-block" id="payButton">Pay Now</button>
-              <p class="pay-note">Payments are processed securely. A booking reference is generated after payment and our medical team will contact you shortly to confirm your appointment.</p>
+              <button type="button" class="btn btn-whatsapp btn-block" id="payButton">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm0 18.15a8.2 8.2 0 0 1-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.24-8.24 2.2 0 4.27.86 5.82 2.42a8.18 8.18 0 0 1 2.41 5.83c0 4.54-3.7 8.23-8.23 8.23z"/></svg>
+                Confirm &amp; Book via WhatsApp
+              </button>
+              <p class="pay-note">All appointments and payments (including transfers) are coordinated directly through WhatsApp. A representative will contact you immediately upon receiving your message.</p>
             </div>
           </div>
 

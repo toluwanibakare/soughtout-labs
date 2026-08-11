@@ -256,7 +256,7 @@
         localStorage.setItem("soughtout_leads", JSON.stringify(leads));
       } catch (err) {}
 
-      var text = "Hello Soughtout Medials. New message from " + name +
+      var text = "Hello Soughtout Medicals. New message from " + name +
         " (Phone: " + phone + (email ? ", Email: " + email : "") + "): " + message;
 
       var done = document.createElement("div");
@@ -296,7 +296,7 @@
 
   /* ==================================================================
      Contact page form
-     ================================================================== */
+     ================================================================= */
 
   var contactForm = document.getElementById("contactForm");
   if (contactForm) {
@@ -319,7 +319,7 @@
         localStorage.setItem("soughtout_leads", JSON.stringify(leads));
       } catch (err) {}
 
-      var text = "Hello Soughtout Medials. New message from " + name +
+      var text = "Hello Soughtout Medicals. New message from " + name +
         " (Phone: " + phone + (email ? ", Email: " + email : "") + "): " + message;
       window.open(whatsappLink(text), "_blank", "noopener");
 
